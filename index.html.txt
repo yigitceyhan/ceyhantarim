@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEYHAN TARIM - Traktör Finans & Galeri Pro v11.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; transition: background-color 0.3s, color 0.3s; }
+        body.dark-mode { background-color: #0f172a; color: #f8fafc; }
+        body.dark-mode aside { background-color: #1e293b; border-color: #334155; }
+        body.dark-mode .card-bg { background-color: #1e293b; border-color: #334155; color: #f8fafc; }
+        body.dark-mode .text-gray-900 { color: #f8fafc; }
+        body.dark-mode .text-gray-800 { color: #f1f5f9; }
+        body.dark-mode .text-gray-700 { color: #e2e8f0; }
+        body.dark-mode .text-gray-600 { color: #cbd5e1; }
+        body.dark-mode .bg-gray-50 { background-color: #0f172a; border-color: #334155; color: #f8fafc; }
+        body.dark-mode input, body.dark-mode select { background-color: #0f172a; border-color: #334155; color: #f8fafc; }
+        .sidebar-btn.active { background: linear-gradient(135deg,#2563eb,#1d4ed8); color: #ffffff; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3); }
+        .sidebar-btn { transition: all .15s ease; }
+        .sidebar-btn:hover:not(.active) { transform: translateX(2px); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn .2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .card-shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04); }
+        .card-shadow:hover { box-shadow: 0 8px 16px -4px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.05); }
+        .staff-hide { display: none !important; }
+        .darkmode-toggle-on { background: linear-gradient(135deg,#2563eb,#1d4ed8) !important; color: #ffffff !important; }
+        .kpi-bar { height: 4px; border-radius: 4px 4px 0 0; margin: -20px -20px 16px -20px; }
+        button { transition: transform .1s ease, box-shadow .15s ease; }
+        button:active { transform: scale(0.97); }
+        .garaj-card { transition: transform .15s ease, box-shadow .15s ease; }
+        .garaj-card:hover { transform: translateY(-2px); }
+        .auth-locked > aside, .auth-locked > main { display: none; }
+        .cloud-busy main button, .cloud-busy main input, .cloud-busy main select, .cloud-busy #edit-modal { pointer-events: none; opacity: .65; }
+        .cloud-offline main button:not(.local-action) { opacity: .65; }
+        #auth-screen { background: #eef2f0; color: #183b32; }
+        #auth-screen input:focus { outline: 2px solid #15775d; outline-offset: 2px; }
+        @media (max-width: 767px) {
+            body:not(.auth-locked) > main { max-height: none; overflow: visible; }
+            body:not(.auth-locked) > aside { padding: 16px; }
+            aside nav { display: flex; flex-wrap: wrap; gap: 6px; }
+            aside nav .sidebar-btn { width: auto; flex: 1 1 145px; font-size: 12px; }
+        }
+
+        /* TOAST */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+        .toast { background: #111827; color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 12px; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(0,0,0,.2); opacity: 0; transform: translateY(10px); transition: all .25s ease; display:flex; align-items:center; gap:8px; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.ok { background:#059669; }
+        .toast.err { background:#dc2626; }
+
+        /* PRINT */
+        @media print {
+            aside, .no-print, header button, button { display: none !important; }
+            main { max-height: none !important; overflow: visible !important; padding: 0 !important; }
+            body { background: #fff !important; color: #000 !important; }
+            .card-bg, .bg-white { box-shadow: none !important; border: 1px solid #ddd !important; }
+        }
+    </style>
+</head>
+<body class="auth-locked min-h-screen flex flex-col md:flex-row text-sm">
+
+    <section id="auth-screen" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-5" aria-label="Hesap girişi">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-7 space-y-5">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-emerald-800 text-white flex items-center justify-center text-xl"><i class="fa-solid fa-tractor" aria-hidden="true"></i></div>
+                <div><h1 class="font-bold text-xl">CEYHAN TARIM</h1><p class="text-xs text-gray-500">Ortak garaj ve masraf takibi</p></div>
+            </div>
+            <div><h2 id="auth-heading" class="text-lg font-bold">Hesabınıza giriş yapın</h2><p id="auth-description" class="text-sm text-gray-500 mt-1">Bilgisayar ve telefonlarda aynı kayıtları kullanın. Personel hesabınızı patron tanımlar.</p></div>
+            <p id="auth-message" class="text-sm rounded-xl bg-gray-50 p-3" role="status" aria-live="polite">Güvenli giriş hazırlanıyor…</p>
+            <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-4">
+                <div id="auth-email-box"><label for="auth-email" class="block text-sm font-semibold mb-1">E-posta adresi</label><input id="auth-email" type="email" autocomplete="username" required class="w-full border border-gray-300 p-3 rounded-xl"></div>
+                <div id="auth-password-box"><label for="auth-password" class="block text-sm font-semibold mb-1">Şifre</label><input id="auth-password" type="password" autocomplete="current-password" required class="w-full border border-gray-300 p-3 rounded-xl"></div>
+                <div id="auth-confirm-box" class="hidden"><label for="auth-confirm" class="block text-sm font-semibold mb-1">Yeni şifreyi tekrar yazın</label><input id="auth-confirm" type="password" autocomplete="new-password" class="w-full border border-gray-300 p-3 rounded-xl"></div>
+                <button id="auth-submit" disabled type="submit" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-semibold p-3 rounded-xl disabled:opacity-50">Giriş yap</button>
+            </form>
+            <div id="auth-links" class="flex flex-wrap gap-3 text-xs font-semibold">
+                <button type="button" onclick="setAuthMode('login')">Giriş</button>
+                <button type="button" onclick="setAuthMode('recovery')">Şifremi unuttum / İlk şifremi belirle</button>
+                <button type="button" onclick="setAuthMode('signup')">Patron hesabı oluştur</button>
+            </div>
+            <p class="text-xs text-gray-400 border-t pt-4">İnternet bağlantısı gereklidir. Alış fiyatları, maliyetler ve kâr bilgileri yalnızca patrona açıktır.</p>
+        </div>
+    </section>
+
+    <div id="toast-container"></div>
+
+    <!-- SOL SABİT MENÜ -->
+    <aside class="w-full md:w-64 bg-white border-r border-gray-200 p-5 flex flex-col justify-between shrink-0 no-print">
+        <div>
+            <div class="flex items-center gap-3 pb-5 border-b border-gray-100 mb-6">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-500/30" style="background:linear-gradient(135deg,#2563eb,#1e40af)">
+                    <i class="fa-solid fa-tractor"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base tracking-tight" id="sidebar-company-name">CEYHAN TARIM</h1>
+                    <p class="text-xs text-blue-600 font-medium">Galeri & Finans v11.0</p>
+                </div>
+            </div>
+
+            <div class="mb-5 p-3 bg-gray-100 rounded-xl space-y-2 text-xs">
+                <p id="account-label" class="font-semibold">Hesap kontrol ediliyor</p>
+                <p id="cloud-status" role="status" aria-live="polite" class="text-gray-500">Bağlantı hazırlanıyor</p>
+                <div class="flex gap-3 font-semibold"><button class="local-action" onclick="refreshCloud(true)">Yenile</button><button class="local-action" onclick="logoutCloud()">Çıkış yap</button></div>
+            </div>
+
+            <nav class="space-y-1.5 font-medium text-gray-600">
+                <button onclick="showTab('tab-ozet', this)" class="sidebar-btn active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition hover:bg-gray-100 text-left">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> Dashboard (Özet)
+                </button>
+                <button onclick="showTab('tab-garaj', this)" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition hover:bg-gray-100 text-left">
+                    <i class="fa-solid fa-warehouse w-4 text-center"></i> Traktör Garajı
+                </button>
+                <button id="nav-sanayi" onclick="showTab('tab-sanayi', this)" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition hover:bg-gray-100 text-left">
+                    <i class="fa-solid fa-wrench w-4 text-center"></i> Sanayi & Masraflar
+                </button>
+                <button id="nav-satis" onclick="showTab('tab-satis', this)" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition hover:bg-gray-100 text-left staff-only-hide">
+                    <i class="fa-solid fa-handshake w-4 text-center"></i> Satış & Takas
+                </button>
+                <button id="nav-kira" onclick="showTab('tab-kira', this)" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition hover:bg-gray-100 text-left staff-only-hide">
+                    <i class="fa-solid fa-store w-4 text-center"></i> Dükkan & Sabit Gider
+                </button>
+                <button id="nav-simulasyon" onclick="showTab('tab-simulasyon', this)" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition hover:bg-gray-100 text-left staff-only-hide">
+                    <i class="fa-solid fa-calculator w-4 text-center"></i> Kâr Simülatörü
+                </button>
+                <button onclick="showTab('tab-ayarlar', this)" class="sidebar-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition hover:bg-gray-100 text-left staff-only-hide">
+                    <i class="fa-solid fa-gear w-4 text-center"></i> Ayarlar & Yedekleme
+                </button>
+            </nav>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100 text-xs text-gray-400 text-center" id="sidebar-footer-note">
+            Vezirköprü • Ceyhan Tarım Galeri
+        </div>
+    </aside>
+
+    <!-- SAĞ ANA İÇERİK ALANI -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto max-h-screen space-y-6">
+
+        <div id="cloud-error-box" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm" role="alert">
+            <p id="cloud-error-text"></p>
+            <div class="flex flex-wrap gap-3 mt-2 font-semibold"><button class="local-action" onclick="refreshCloud(true)">Bağlantıyı kontrol et</button><button id="draft-download" class="local-action hidden" onclick="downloadFailedDraft()">Kaydedilemeyen değişikliği yedekle</button></div>
+        </div>
+
+        <!-- 1. DASHBOARD -->
+        <div id="tab-ozet" class="tab-content active space-y-6">
+            <div class="flex justify-between items-center bg-white card-bg p-4 rounded-2xl border border-gray-200 card-shadow">
+                <div>
+                    <h2 class="text-lg font-bold">Finansal Durum Özeti</h2>
+                    <p class="text-xs text-gray-500">Dükkan bilançosu, araç stoğu ve gerçek zamanlı kâr takibi</p>
+                </div>
+                <button onclick="window.print()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Rapor Yazdır / PDF
+                </button>
+            </div>
+
+            <div id="backup-warning" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-xs font-semibold items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation"></i> <span id="backup-warning-text"></span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white card-bg p-5 rounded-2xl border border-gray-200 card-shadow overflow-hidden">
+                    <div class="kpi-bar" style="background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div>
+                    <div class="flex justify-between items-center text-gray-500 text-xs font-medium mb-1">
+                        <span>Garajdaki Stok</span>
+                        <i class="fa-solid fa-tractor text-blue-500 text-base"></i>
+                    </div>
+                    <p id="kpi-stok-adet" class="text-2xl font-extrabold">0 Adet</p>
+                    <span class="text-[11px] text-gray-400">Aktif Satıştaki Traktörler</span>
+                </div>
+
+                <div class="bg-white card-bg p-5 rounded-2xl border border-gray-200 card-shadow staff-only-hide overflow-hidden">
+                    <div class="kpi-bar" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div>
+                    <div class="flex justify-between items-center text-gray-500 text-xs font-medium mb-1">
+                        <span>Toplam Stok Sermayesi</span>
+                        <i class="fa-solid fa-coins text-amber-500 text-base"></i>
+                    </div>
+                    <p id="kpi-stok-sermaye" class="text-2xl font-extrabold">₺0</p>
+                    <span class="text-[11px] text-gray-400">Alış + Toplam Sanayi Masrafı</span>
+                </div>
+
+                <div class="bg-white card-bg p-5 rounded-2xl border border-gray-200 card-shadow staff-only-hide overflow-hidden">
+                    <div class="kpi-bar" style="background:linear-gradient(90deg,#8b5cf6,#a78bfa)"></div>
+                    <div class="flex justify-between items-center text-gray-500 text-xs font-medium mb-1">
+                        <span>Dükkan Giderleri</span>
+                        <i class="fa-solid fa-building-un text-purple-500 text-base"></i>
+                    </div>
+                    <p id="kpi-toplam-kira" class="text-2xl font-extrabold">₺0</p>
+                    <span class="text-[11px] text-gray-400">Kira, Fatura, Personel vs.</span>
+                </div>
+
+                <div class="bg-white card-bg p-5 rounded-2xl border border-gray-200 card-shadow staff-only-hide overflow-hidden">
+                    <div class="kpi-bar" style="background:linear-gradient(90deg,#10b981,#34d399)"></div>
+                    <div class="flex justify-between items-center text-gray-500 text-xs font-medium mb-1">
+                        <span>Net Bilanço Kârı</span>
+                        <i class="fa-solid fa-chart-line text-emerald-500 text-base"></i>
+                    </div>
+                    <p id="kpi-net-kar" class="text-2xl font-extrabold text-emerald-600">₺0</p>
+                    <span class="text-[11px] text-gray-400">Satış Kârları - Dükkan Gideri</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 staff-only-hide">
+                <div class="lg:col-span-2 bg-white card-bg p-5 rounded-2xl border border-gray-200 card-shadow">
+                    <h3 class="font-bold text-sm mb-4">Gider Dağılım Analizi</h3>
+                    <div class="h-64"><canvas id="chartGiderler"></canvas></div>
+                </div>
+                <div class="bg-white card-bg p-5 rounded-2xl border border-gray-200 card-shadow flex flex-col justify-center items-center">
+                    <h3 class="font-bold text-sm mb-4 w-full text-left">Sermaye / Kâr Oranı</h3>
+                    <div class="h-56 w-full flex justify-center"><canvas id="chartKarSermaye"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white card-bg rounded-2xl border border-gray-200 card-shadow overflow-hidden">
+                <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="font-bold">Son Finansal Hareketler</h3>
+                    <span class="text-xs text-gray-400">Tüm Alış, Satış ve Masraf Kayıtları</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                <th class="p-3.5 font-semibold">Tarih</th>
+                                <th class="p-3.5 font-semibold">Tür</th>
+                                <th class="p-3.5 font-semibold">Araç / Plaka / Cari</th>
+                                <th class="p-3.5 font-semibold">Açıklama / Detay</th>
+                                <th class="p-3.5 font-semibold text-right staff-only-hide">Tutar / Net Kâr</th>
+                                <th class="p-3.5 font-semibold text-center staff-only-hide no-print">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ozet-gecmis-listesi" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. GARAJ -->
+        <div id="tab-garaj" class="tab-content space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white card-bg p-4 rounded-2xl border border-gray-200 card-shadow">
+                <div>
+                    <h2 class="text-lg font-bold">Stok Garajı</h2>
+                    <p class="text-xs text-gray-500">Satıştaki tüm traktörler, maliyetler ve özellikler</p>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <input type="text" id="garaj-arama-input" onkeyup="renderGaraj()" placeholder="Marka, plaka, model veya satıcı ara..." class="bg-gray-50 border border-gray-200 text-xs rounded-xl px-3 py-2 w-full sm:w-64 focus:outline-none focus:border-blue-500">
+                    <button onclick="toggleForm('yeni-traktor-form')" class="staff-only-hide bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-xl font-semibold shadow-md shrink-0">
+                        <i class="fa-solid fa-plus mr-1"></i> Yeni Traktör Al
+                    </button>
+                </div>
+            </div>
+
+            <div id="yeni-traktor-form" class="hidden staff-only-hide bg-white card-bg p-6 rounded-2xl border border-blue-100 shadow-xl space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <h3 class="font-bold text-blue-600">Yeni Traktör Alış Kaydı</h3>
+                    <button onclick="toggleForm('yeni-traktor-form')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Marka Seçin</label>
+                        <select id="in-marka" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl focus:border-blue-500 focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Model Adı / Serisi</label>
+                        <input type="text" id="in-model" placeholder="Örn: 5080 E / 5105 / 240S" class="w-full bg-gray-50 border border-gray-200 p-2 text-xs rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Model Yılı</label>
+                        <input type="number" id="in-yil" placeholder="2022" class="w-full bg-gray-50 border border-gray-200 p-2 text-xs rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Plaka / Şasi</label>
+                        <input type="text" id="in-plaka" placeholder="Örn: 55 CEY 55" class="w-full bg-gray-50 border border-gray-200 p-2 text-xs rounded-xl uppercase">
+                    </div>
+                    <div class="staff-only-hide">
+                        <label class="block text-xs font-medium mb-1">Alış Fiyatı (TL) <span class="text-blue-500">(Binlik Otomatik)</span></label>
+                        <input type="text" id="in-alis-fiyat" onblur="applyThousands(this)" placeholder="850 -> 850.000" class="w-full bg-gray-50 border border-gray-200 p-2 text-xs rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Hedef Müşteri Satış Fiyatı (TL)</label>
+                        <input type="text" id="in-hedef-fiyat" onblur="applyThousands(this)" placeholder="1050 -> 1.050.000" class="w-full bg-gray-50 border border-gray-200 p-2 text-xs rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Satın Alınan Kişi / Cari</label>
+                        <input type="text" id="in-satici-ad" placeholder="Ahmet Yılmaz" class="w-full bg-gray-50 border border-gray-200 p-2 text-xs rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Satıcı Telefon</label>
+                        <input type="text" id="in-satici-tel" placeholder="0532 000 0000" class="w-full bg-gray-50 border border-gray-200 p-2 text-xs rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Özellikler / Notlar / Muayene Tarihi</label>
+                        <input type="text" id="in-notlar" placeholder="Lastikler %80, vize 2027" class="w-full bg-gray-50 border border-gray-200 p-2 text-xs rounded-xl">
+                    </div>
+                </div>
+                <button onclick="traktorAlisKaydet()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow-md transition">
+                    Traktörü Garaja Ekle
+                </button>
+            </div>
+
+            <div id="garaj-kartlari" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        </div>
+
+        <!-- 3. SANAYİ -->
+        <div id="tab-sanayi" class="tab-content space-y-6">
+            <div class="bg-white card-bg p-4 rounded-2xl border border-gray-200 card-shadow">
+                <h2 class="text-lg font-bold">Sanayi & Masraf Ekle</h2>
+                <p class="text-xs text-gray-500">Traktörlere yapılan tamir, yedek parça, noter ve nakliye masraflarını işleyin</p>
+            </div>
+
+            <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow max-w-2xl space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Hangi Traktör İçin Harcandı?</label>
+                    <select id="sanayi-traktor-select" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl focus:border-blue-500 focus:outline-none"></select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Gider Türü</label>
+                        <select id="sanayi-gider-tur" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl focus:border-blue-500 focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Tutar (TL)</label>
+                        <input type="text" id="sanayi-tutar" onblur="applyThousands(this)" placeholder="12.5 -> 12.500" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Açıklama / Usta Adı</label>
+                    <input type="text" id="sanayi-aciklama" placeholder="Örn: Motor yağı değişti, kaporta boyandı" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                </div>
+
+                <button onclick="sanayiGiderKaydet()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl shadow-md transition">
+                    Masrafı Traktör Maliyetine Ekle
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. SATIŞ -->
+        <div id="tab-satis" class="tab-content space-y-6">
+            <div class="bg-white card-bg p-4 rounded-2xl border border-gray-200 card-shadow">
+                <h2 class="text-lg font-bold">Traktör Satış & Takas Modülü</h2>
+                <p class="text-xs text-gray-500">Satılan aracı garajdan çıkarın, kârı sabitleyin veya takaslı yeni araç girin</p>
+            </div>
+
+            <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow max-w-2xl space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Satılacak Traktörü Seçin</label>
+                    <select id="satis-traktor-select" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl"></select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Satış Şekli</label>
+                        <select id="satis-sekli" onchange="toggleTakasKutusu(this.value)" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                            <option value="nakit">Nakit / Banka Havalesi</option>
+                            <option value="takas">Takaslı Satış (Üste Para + Yeni Araç)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Alınan Nakit Tutarı (TL)</label>
+                        <input type="text" id="satis-nakit-tutar" onblur="applyThousands(this)" placeholder="1100 -> 1.100.000" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                    </div>
+                </div>
+
+                <div id="takas-kutusu" class="hidden bg-blue-50/60 p-4 rounded-2xl border border-blue-200 space-y-3">
+                    <h4 class="text-xs font-bold text-blue-700">Takasla Alınan Yeni Traktör Bilgileri</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-medium mb-1">Marka</label>
+                            <select id="takas-marka" class="w-full bg-white border border-gray-200 p-2 text-xs rounded-lg"></select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium mb-1">Model & Yıl</label>
+                            <input type="text" id="takas-model" placeholder="Explorer 75 (2018)" class="w-full bg-white border border-gray-200 p-2 text-xs rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium mb-1">Plaka</label>
+                            <input type="text" id="takas-plaka" placeholder="55 TAKAS 01" class="w-full bg-white border border-gray-200 p-2 text-xs rounded-lg uppercase">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-medium mb-1">Takasta Sayılan Değeri / Alış Maliyeti (TL)</label>
+                            <input type="text" id="takas-fiyat" onblur="applyThousands(this); autofillTakasHedef();" placeholder="650 -> 650.000" class="w-full bg-white border border-gray-200 p-2 text-xs rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium mb-1">Yeni Hedef Satış Fiyatı (TL)</label>
+                            <input type="text" id="takas-hedef-fiyat" onblur="applyThousands(this)" placeholder="Otomatik önerilir" class="w-full bg-white border border-gray-200 p-2 text-xs rounded-lg">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Satın Alan Alıcı Adı</label>
+                        <input type="text" id="satis-alici-ad" placeholder="Mehmet Demir" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Alıcı Telefon</label>
+                        <input type="text" id="satis-alici-tel" placeholder="0544 000 0000" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                    </div>
+                </div>
+
+                <button onclick="satisOnayla()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow-md transition">
+                    Satışı Onayla ve Kasaya İşle
+                </button>
+            </div>
+        </div>
+
+        <!-- 5. KİRA -->
+        <div id="tab-kira" class="tab-content space-y-6">
+            <div class="bg-white card-bg p-4 rounded-2xl border border-gray-200 card-shadow">
+                <h2 class="text-lg font-bold">Dükkan & Sabit Giderler</h2>
+                <p class="text-xs text-gray-500">Traktörden bağımsız genel dükkan harcamalarını ekleyin</p>
+            </div>
+
+            <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow max-w-2xl space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Gider Kalemi</label>
+                    <select id="kira-kalem-select" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Tutar (TL)</label>
+                    <input type="text" id="kira-tutar" onblur="applyThousands(this)" placeholder="20 -> 20.000" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                </div>
+
+                <button onclick="kiraGiderKaydet()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl shadow-md transition">
+                    Dükkan Gideri Kaydet
+                </button>
+            </div>
+        </div>
+
+        <!-- 6. SİMÜLASYON -->
+        <div id="tab-simulasyon" class="tab-content space-y-6">
+            <div class="bg-white card-bg p-4 rounded-2xl border border-gray-200 card-shadow">
+                <h2 class="text-lg font-bold">Satış & Kâr Simülatörü</h2>
+                <p class="text-xs text-gray-500">Teklif vermeden önce maliyet ve net kârınızı hesaplayın</p>
+            </div>
+
+            <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow max-w-xl space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Hesaplanacak Traktörü Seçin</label>
+                    <select id="sim-traktor-select" onchange="hesaplaSimulasyon()" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Düşünülen Satış Fiyatı (TL)</label>
+                    <input type="text" id="sim-satis-fiyat" onblur="applyThousands(this); hesaplaSimulasyon();" placeholder="1100 -> 1.100.000" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                </div>
+
+                <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 space-y-2 text-xs">
+                    <div class="flex justify-between"><span>Araç Alış Fiyatı:</span><span id="sim-alis" class="font-bold">₺0</span></div>
+                    <div class="flex justify-between"><span>Yapılan Toplam Masraf:</span><span id="sim-masraf" class="font-bold text-amber-600">₺0</span></div>
+                    <div class="flex justify-between font-bold pt-2 border-t border-blue-200"><span>Toplam Maliyet:</span><span id="sim-maliyet">₺0</span></div>
+                    <div class="flex justify-between text-base font-extrabold text-emerald-600 pt-2 border-t border-blue-200"><span>Tahmini Net Kâr:</span><span id="sim-net-kar">₺0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. AYARLAR -->
+        <div id="tab-ayarlar" class="tab-content space-y-6">
+            <div class="bg-white card-bg p-4 rounded-2xl border border-gray-200 card-shadow">
+                <h2 class="text-lg font-bold">Veri Yönetimi & Detaylı Ayarlar</h2>
+                <p class="text-xs text-gray-500">Sistem ayarlarını yapılandırın veya verilerinizi yedekleyin</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Güvenlik -->
+                <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow space-y-4">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-lock text-amber-500"></i> Hesap Güvenliği</h3>
+                    <div>
+                        <label class="block text-xs font-medium mb-1" for="cfg-admin-pass">Yeni hesap şifresi (en az 10 karakter)</label>
+                        <input type="password" id="cfg-admin-pass" autocomplete="new-password" placeholder="Yeni şifre girin..." class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                    </div>
+                    <button onclick="saveAdminPassword()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-4 py-2 rounded-xl font-semibold">Şifreyi Güncelle</button>
+                    <div class="pt-3 border-t border-gray-100 staff-only-hide">
+                        <label class="block text-xs font-medium mb-1">Admin Oturumu Otomatik Kapanma (dk)</label>
+                        <select id="cfg-session-timeout" onchange="updateSessionTimeout(this.value)" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                            <option value="0">Kapalı (hiç kapanmasın)</option>
+                            <option value="5">5 dakika</option>
+                            <option value="15">15 dakika</option>
+                            <option value="30">30 dakika</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow space-y-4 md:col-span-2">
+                    <h3 class="font-bold text-base"><i class="fa-solid fa-users mr-2"></i> Personel Hesapları</h3>
+                    <p class="text-xs text-gray-500">Personel özellikleri, müşteri satış fiyatını ve masrafları görür; yalnızca masraf ekleyebilir. Hesap oluşturulduğunda şifre belirleme bağlantısı e-postayla gönderilir.</p>
+                    <form onsubmit="personnelAdd(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div><label for="personnel-name" class="block text-xs mb-1">Personel adı</label><input id="personnel-name" required maxlength="150" class="w-full border border-gray-200 p-2.5 text-sm rounded-xl"></div>
+                        <div><label for="personnel-email" class="block text-xs mb-1">E-posta adresi</label><input id="personnel-email" type="email" required class="w-full border border-gray-200 p-2.5 text-sm rounded-xl"></div>
+                        <button id="personnel-submit" type="submit" class="self-end bg-emerald-700 text-white p-2.5 rounded-xl text-sm font-semibold">Personel hesabı ekle</button>
+                    </form>
+                    <p id="personnel-message" class="text-xs text-gray-500" role="status"></p>
+                    <div id="personnel-list" class="space-y-2"></div>
+                    <button class="local-action text-xs font-semibold text-blue-700" onclick="loadPersonnel()">Hesap listesini yenile</button>
+                </div>
+
+                <!-- Görünüm -->
+                <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow space-y-4">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-palette text-blue-500"></i> Görünüm & Tema</h3>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium">Karanlık Mod (Dark Theme)</span>
+                        <button id="darkmode-btn" onclick="toggleDarkMode()" class="bg-gray-200 px-3 py-1.5 rounded-xl text-xs font-bold transition">Aç / Kapat</button>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                        <span class="text-xs font-medium">Sistem Temasına Otomatik Uy</span>
+                        <input type="checkbox" id="cfg-auto-dark" onchange="toggleAutoDark(this.checked)" class="w-4 h-4">
+                    </div>
+                </div>
+
+                <!-- Finans ayarları -->
+                <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow space-y-4">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-coins text-emerald-500"></i> Finans Ayarları</h3>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium">Binlik Otomatik Tamamlama (150 → 150.000)</span>
+                        <input type="checkbox" id="cfg-binlik" onchange="toggleBinlik(this.checked)" class="w-4 h-4">
+                    </div>
+                    <div class="pt-3 border-t border-gray-100">
+                        <label class="block text-xs font-medium mb-1">Para Birimi Simgesi</label>
+                        <select id="cfg-currency" onchange="updateCurrency(this.value)" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                            <option value="₺">₺ Türk Lirası</option>
+                            <option value="$">$ Dolar</option>
+                            <option value="€">€ Euro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Şirket bilgileri -->
+                <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow space-y-3">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-building text-gray-500"></i> Şirket / Rapor Bilgileri</h3>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Firma Adı</label>
+                        <input type="text" id="cfg-company-name" placeholder="CEYHAN TARIM" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Adres</label>
+                        <input type="text" id="cfg-company-address" placeholder="Vezirköprü / Samsun" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Telefon</label>
+                        <input type="text" id="cfg-company-phone" placeholder="0362 000 00 00" class="w-full bg-gray-50 border border-gray-200 p-2.5 text-xs rounded-xl">
+                    </div>
+                    <button onclick="saveCompanyInfo()" class="bg-gray-700 hover:bg-gray-800 text-white text-xs px-4 py-2 rounded-xl font-semibold">Bilgileri Kaydet</button>
+                </div>
+
+                <!-- Liste yönetimi -->
+                <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow space-y-4 md:col-span-2">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-list-check text-indigo-500"></i> Liste Yönetimi (Marka, Gider Türü, Kira Kalemi)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Traktör Markaları</label>
+                            <div id="list-markalar" class="space-y-1 max-h-40 overflow-y-auto mb-2"></div>
+                            <div class="flex gap-1">
+                                <input type="text" id="new-marka" placeholder="Yeni marka..." class="flex-1 bg-gray-50 border border-gray-200 p-2 text-xs rounded-lg">
+                                <button onclick="listEkle('markalar','new-marka')" class="bg-indigo-600 text-white px-3 rounded-lg text-xs"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Sanayi Gider Türleri</label>
+                            <div id="list-giderturleri" class="space-y-1 max-h-40 overflow-y-auto mb-2"></div>
+                            <div class="flex gap-1">
+                                <input type="text" id="new-gidertur" placeholder="Yeni gider türü..." class="flex-1 bg-gray-50 border border-gray-200 p-2 text-xs rounded-lg">
+                                <button onclick="listEkle('giderTurleri','new-gidertur')" class="bg-indigo-600 text-white px-3 rounded-lg text-xs"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Dükkan Gider Kalemleri</label>
+                            <div id="list-kirakalemleri" class="space-y-1 max-h-40 overflow-y-auto mb-2"></div>
+                            <div class="flex gap-1">
+                                <input type="text" id="new-kirakalem" placeholder="Yeni kalem..." class="flex-1 bg-gray-50 border border-gray-200 p-2 text-xs rounded-lg">
+                                <button onclick="listEkle('kiraKalemleri','new-kirakalem')" class="bg-indigo-600 text-white px-3 rounded-lg text-xs"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yedekleme -->
+                <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow space-y-3">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-download text-emerald-500"></i> Yedek İndir</h3>
+                    <p class="text-xs text-gray-500">Tüm galeri verilerinizi JSON formatında bilgisayarınıza aktarın (şifre dahil edilmez).</p>
+                    <p class="text-[11px] text-gray-400" id="last-backup-text">Henüz yedek alınmadı.</p>
+                    <div class="flex gap-2">
+                        <button onclick="veriIndir()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow"><i class="fa-solid fa-download mr-1"></i> JSON İndir</button>
+                        <button onclick="csvIndir()" class="bg-gray-600 hover:bg-gray-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow"><i class="fa-solid fa-file-csv mr-1"></i> CSV İndir</button>
+                    </div>
+                </div>
+
+                <!-- Yedek yükle -->
+                <div class="bg-white card-bg p-6 rounded-2xl border border-gray-200 card-shadow space-y-3">
+                    <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-upload text-purple-500"></i> Yedek Yükle (Import)</h3>
+                    <p class="text-xs text-gray-500">Daha önce indirdiğiniz JSON yedek dosyasını geri yükleyin.</p>
+                    <input type="file" id="import-file" accept=".json" class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700">
+                    <button onclick="veriyukle()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow"><i class="fa-solid fa-upload mr-1"></i> Yedeği Yükle</button>
+                    <div class="border-t pt-3 space-y-2"><p class="text-xs text-gray-500">Bu tarayıcıda önceki sürümden kalan kayıtlar varsa ortak sisteme aktarabilirsiniz. Yerel kayıtlar otomatik silinmez. HTML dosyasını bilgisayarda açarak kullandıysanız oradan JSON yedek indirip burada yükleyin.</p><button onclick="importLegacyData()" class="text-xs font-semibold text-blue-700">Bu tarayıcıdaki eski kayıtları aktar</button></div>
+                </div>
+
+                <!-- Sıfırlama -->
+                <div class="bg-white card-bg p-6 rounded-2xl border border-red-200 card-shadow space-y-3 md:col-span-2">
+                    <h3 class="font-bold text-base flex items-center gap-2 text-red-600"><i class="fa-solid fa-triangle-exclamation"></i> Tehlikeli Bölge</h3>
+                    <p class="text-xs text-gray-500">Bu işlem garaj, masraf, kira ve satış kayıtlarının tamamını siler. Geri alınamaz — önce yedek alın.</p>
+                    <button onclick="tumVeriyiSifirla()" class="bg-red-600 hover:bg-red-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow">Tüm Verileri Sıfırla</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- DÜZENLEME MODAL -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white card-bg w-full max-w-lg rounded-2xl p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold" id="modal-title">Kaydı Düzenle</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="modal-body" class="space-y-3"></div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold">İptal</button>
+                <button id="modal-save-btn" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------- VARSAYILAN YAPILANDIRMA ----------
+        const DEFAULT_MARKALAR = ['Deutz-Fahr','Same','Massey Ferguson','New Holland','Case IH','Tümosan','Erkunt','Hattat','John Deere','Landini','Kubota','Başak','Diğer'];
+        const DEFAULT_GIDER_TURLERI = ['Sanayi & Usta İşçiliği','Yedek Parça & Yağ','Noter & Devir Ücreti','Nakliye, Çekici & Mazot','Lastik & Kaporta Boya'];
+        const DEFAULT_KIRA_KALEMLERI = ['Dükkan / Depo Kirası','Elektrik, Su, İnternet Faturası','Eleman Maaşı & Yemek','Muhasebe & Vergi Ödemeleri','Ofis Mutfak & Ağırlama'];
+
+        const STORAGE_KEY = 'ceyhan_tarim_v11';
+        const OLD_STORAGE_KEY = 'ceyhan_tarim_v6';
+
+        function loadDb() {
+            return loadDbDefaults({});
+        }
+
+        let db = loadDb();
+        let currentRole = 'staff';
+        let chartGiderRef = null, chartKarRef = null;
+        let sessionTimer = null;
+
+        function saveData(silent) {
+            return saveCloudData(silent);
+        }
+
+        // ---------- TOAST BİLDİRİMİ ----------
+        function showToast(msg, type) {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = 'toast' + (type === 'ok' ? ' ok' : type === 'err' ? ' err' : '');
+            const icon = type === 'err' ? 'fa-circle-xmark' : 'fa-circle-check';
+            el.innerHTML = '<i class="fa-solid ' + icon + '"></i><span>' + escapeHtml(msg) + '</span>';
+            container.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('show'));
+            setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => el.remove(), 250);
+            }, 2000);
+        }
+
+        // ---------- GÜVENLİK: HTML KAÇIŞI ----------
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // ---------- BİNLİK SİSTEM ----------
+        function applyThousands(inputEl) {
+            if (!db.config.binlikOtomatik) return;
+            let val = inputEl.value.trim().replace(/\./g, '').replace(',', '.');
+            if (!val || isNaN(val)) return;
+            let num = parseFloat(val);
+            if (num < 10000) num = num * 1000;
+            inputEl.value = num.toLocaleString('tr-TR');
+        }
+
+        function parseThousands(valStr) {
+            if (!valStr) return 0;
+            let clean = valStr.toString().replace(/\./g, '').replace(',', '.');
+            return parseFloat(clean) || 0;
+        }
+
+        function fmt(n) {
+            return (db.config.currency || '₺') + Number(n || 0).toLocaleString('tr-TR');
+        }
+
+        // ---------- ROL & OTURUM ----------
+        function switchRole(role) {
+            currentRole = role;
+            renderAll();
+            if (role === 'admin') armSessionTimeout();
+            else if (sessionTimer) clearTimeout(sessionTimer);
+        }
+
+        function armSessionTimeout() {
+            if (sessionTimer) clearTimeout(sessionTimer);
+            const mins = parseInt(db.config.sessionTimeoutMin || 0);
+            if (!mins) return;
+            sessionTimer = setTimeout(() => {
+                if (currentRole === 'admin') {
+                    logoutCloud();
+                }
+            }, mins * 60 * 1000);
+        }
+
+        ['click','keydown'].forEach(evt => {
+            document.addEventListener(evt, () => { if (currentRole === 'admin') armSessionTimeout(); });
+        });
+
+        function updateSessionTimeout(val) {
+            db.config.sessionTimeoutMin = parseInt(val) || 0;
+            saveData();
+            armSessionTimeout();
+        }
+
+        async function saveAdminPassword() {
+            const p = document.getElementById('cfg-admin-pass').value.trim();
+            if (p.length < 10) { showToast('Şifre en az 10 karakter olmalıdır.', 'err'); return; }
+            try {
+                await window.cloudIdentity.updateUser({ password: p });
+                document.getElementById('cfg-admin-pass').value = '';
+                showToast('Hesap şifresi güncellendi.', 'ok');
+            } catch { showToast('Şifre güncellenemedi. Tekrar giriş yapıp deneyin.', 'err'); }
+        }
+
+        // ---------- TEMA ----------
+        function applyDarkModeToDom() {
+            if (db.config.darkMode) document.body.classList.add('dark-mode');
+            else document.body.classList.remove('dark-mode');
+            const btn = document.getElementById('darkmode-btn');
+            if (btn) {
+                if (db.config.darkMode) btn.classList.add('darkmode-toggle-on');
+                else btn.classList.remove('darkmode-toggle-on');
+            }
+        }
+
+        function toggleDarkMode() {
+            db.config.darkMode = !db.config.darkMode;
+            applyDarkModeToDom();
+            saveData();
+        }
+
+        function toggleAutoDark(checked) {
+            db.config.autoDarkMode = checked;
+            if (checked) {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                db.config.darkMode = prefersDark;
+                applyDarkModeToDom();
+            }
+            saveData();
+        }
+
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (db.config.autoDarkMode) {
+                    db.config.darkMode = e.matches;
+                    applyDarkModeToDom();
+                    saveData(true);
+                }
+            });
+        }
+
+        function toggleBinlik(checked) { db.config.binlikOtomatik = checked; saveData(); }
+        function updateCurrency(val) { db.config.currency = val; saveData(); }
+
+        function saveCompanyInfo() {
+            db.config.companyName = document.getElementById('cfg-company-name').value.trim() || 'CEYHAN TARIM';
+            db.config.companyAddress = document.getElementById('cfg-company-address').value.trim();
+            db.config.companyPhone = document.getElementById('cfg-company-phone').value.trim();
+            saveData();
+        }
+
+        // ---------- LİSTE YÖNETİMİ ----------
+        function listEkle(key, inputId) {
+            const input = document.getElementById(inputId);
+            const val = input.value.trim();
+            if (!val) return;
+            if (!db.config[key]) db.config[key] = [];
+            if (db.config[key].some(x => x.toLowerCase() === val.toLowerCase())) {
+                showToast('Bu zaten listede var', 'err');
+                return;
+            }
+            db.config[key].push(val);
+            input.value = '';
+            saveData();
+        }
+
+        function listSil(key, val) {
+            if (!confirm('"' + val + '" listeden silinsin mi?')) return;
+            db.config[key] = (db.config[key] || []).filter(x => x !== val);
+            saveData();
+        }
+
+        function renderListYonetimi() {
+            const map = [
+                ['markalar', 'list-markalar'],
+                ['giderTurleri', 'list-giderturleri'],
+                ['kiraKalemleri', 'list-kirakalemleri']
+            ];
+            map.forEach(([key, boxId]) => {
+                const box = document.getElementById(boxId);
+                if (!box) return;
+                box.replaceChildren();
+                (db.config[key] || []).forEach(value => {
+                    const row = document.createElement('div');
+                    row.className = 'flex justify-between items-center bg-gray-50 px-2 py-1 rounded-lg text-xs';
+                    const label = document.createElement('span');
+                    label.textContent = value;
+                    const button = document.createElement('button');
+                    button.className = 'text-gray-400 hover:text-red-600';
+                    button.setAttribute('aria-label', 'Listeden sil');
+                    button.textContent = '×';
+                    button.onclick = () => listSil(key, value);
+                    row.append(label, button);
+                    box.append(row);
+                });
+            });
+        }
+
+        function fillSelectFromConfig(selectEl, list, selectedVal) {
+            selectEl.innerHTML = list.map(v => '<option value="' + escapeHtml(v) + '">' + escapeHtml(v) + '</option>').join('');
+            if (selectedVal) selectEl.value = selectedVal;
+        }
+
+        function showTab(tabId, btn) {
+            if (currentRole !== 'admin' && !['tab-ozet', 'tab-garaj', 'tab-sanayi'].includes(tabId)) return;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+            if (tabId === 'tab-ayarlar') { loadAyarlarForm(); loadPersonnel(); }
+        }
+
+        function loadAyarlarForm() {
+            document.getElementById('cfg-session-timeout').value = db.config.sessionTimeoutMin || 0;
+            document.getElementById('cfg-auto-dark').checked = !!db.config.autoDarkMode;
+            document.getElementById('cfg-binlik').checked = !!db.config.binlikOtomatik;
+            document.getElementById('cfg-currency').value = db.config.currency || '₺';
+            document.getElementById('cfg-company-name').value = db.config.companyName || '';
+            document.getElementById('cfg-company-address').value = db.config.companyAddress || '';
+            document.getElementById('cfg-company-phone').value = db.config.companyPhone || '';
+            renderListYonetimi();
+            renderBackupInfo();
+        }
+
+        function toggleForm(id) { document.getElementById(id).classList.toggle('hidden'); }
+        function toggleTakasKutusu(val) { document.getElementById('takas-kutusu').classList.toggle('hidden', val !== 'takas'); }
+
+        function autofillTakasHedef() {
+            const fiyat = parseThousands(document.getElementById('takas-fiyat').value);
+            const hedefEl = document.getElementById('takas-hedef-fiyat');
+            if (fiyat && !parseThousands(hedefEl.value)) {
+                hedefEl.value = Math.round(fiyat * 1.15).toLocaleString('tr-TR');
+            }
+        }
+
+        function formatDate(isoStr) {
+            if (!isoStr) return '';
+            const d = new Date(isoStr);
+            return isNaN(d.getTime()) ? isoStr : d.toLocaleDateString('tr-TR');
+        }
+
+        // ---------- TRAKTÖR ALIŞ ----------
+        async function traktorAlisKaydet() {
+            if (!canWrite('admin')) return;
+            const marka = document.getElementById('in-marka').value;
+            const model = document.getElementById('in-model').value.trim();
+            const yil = document.getElementById('in-yil').value.trim();
+            const plaka = document.getElementById('in-plaka').value.trim().toUpperCase();
+            const alis = parseThousands(document.getElementById('in-alis-fiyat').value);
+            const hedef = parseThousands(document.getElementById('in-hedef-fiyat').value);
+            const saticiAd = document.getElementById('in-satici-ad').value.trim();
+            const saticiTel = document.getElementById('in-satici-tel').value.trim();
+            const notlar = document.getElementById('in-notlar').value.trim();
+
+            if (!model || !plaka) { showToast('Model ve Plaka zorunlu!', 'err'); return; }
+
+            db.garaj.push({
+                id: 'TRK_' + crypto.randomUUID(),
+                marka, model, yil, plaka, alisFiyati: alis, hedefFiyat: hedef,
+                saticiAd, saticiTel, notlar, tarihISO: new Date().toISOString()
+            });
+
+            if (!await saveData()) return;
+            document.getElementById('in-model').value = '';
+            document.getElementById('in-plaka').value = '';
+            document.getElementById('in-alis-fiyat').value = '';
+            document.getElementById('in-hedef-fiyat').value = '';
+            document.getElementById('in-satici-ad').value = '';
+            document.getElementById('in-satici-tel').value = '';
+            document.getElementById('in-notlar').value = '';
+            toggleForm('yeni-traktor-form');
+        }
+
+        // ---------- SANAYİ GİDERİ ----------
+        async function sanayiGiderKaydet() {
+            if (!canWrite()) return;
+            const traktorId = document.getElementById('sanayi-traktor-select').value;
+            const tur = document.getElementById('sanayi-gider-tur').value;
+            const tutar = parseThousands(document.getElementById('sanayi-tutar').value);
+            const aciklama = document.getElementById('sanayi-aciklama').value.trim();
+
+            if (!traktorId) { showToast('Lütfen bir traktör seçin!', 'err'); return; }
+            if (!tutar || tutar <= 0) { showToast('Geçerli bir tutar girin!', 'err'); return; }
+
+            const traktor = db.garaj.find(t => t.id === traktorId);
+
+            db.giderler.push({
+                id: 'GDR_' + crypto.randomUUID(),
+                traktorId,
+                plaka: traktor ? traktor.plaka : 'Bilinmeyen',
+                markaModel: traktor ? (traktor.marka + ' ' + traktor.model) : '',
+                tur, tutar, aciklama, tarihISO: new Date().toISOString()
+            });
+
+            if (!await saveData()) return;
+            document.getElementById('sanayi-tutar').value = '';
+            document.getElementById('sanayi-aciklama').value = '';
+        }
+
+        // ---------- SATIŞ ----------
+        async function satisOnayla() {
+            if (!canWrite('admin')) return;
+            const traktorId = document.getElementById('satis-traktor-select').value;
+            const sekil = document.getElementById('satis-sekli').value;
+            const nakit = parseThousands(document.getElementById('satis-nakit-tutar').value);
+            const aliciAd = document.getElementById('satis-alici-ad').value.trim();
+            const aliciTel = document.getElementById('satis-alici-tel').value.trim();
+
+            if (!traktorId) { showToast('Satılacak araç seçin!', 'err'); return; }
+
+            const idx = db.garaj.findIndex(t => t.id === traktorId);
+            if (idx === -1) return;
+
+            const arac = db.garaj[idx];
+            let ciro = nakit;
+            let yeniTakasAraci = null;
+
+            if (sekil === 'takas') {
+                const tMarka = document.getElementById('takas-marka').value;
+                const tModel = document.getElementById('takas-model').value.trim();
+                const tPlaka = document.getElementById('takas-plaka').value.trim().toUpperCase();
+                const tFiyat = parseThousands(document.getElementById('takas-fiyat').value);
+                const tHedef = parseThousands(document.getElementById('takas-hedef-fiyat').value) || Math.round(tFiyat * 1.15);
+
+                if (!tPlaka || !tFiyat) { showToast('Takas araç bilgilerini giriniz!', 'err'); return; }
+
+                ciro += tFiyat;
+                yeniTakasAraci = {
+                    id: 'TRK_' + crypto.randomUUID(),
+                    marka: tMarka, model: tModel || 'Takas Araç', yil: '', plaka: tPlaka,
+                    alisFiyati: tFiyat, hedefFiyat: tHedef, saticiAd: aliciAd, saticiTel: aliciTel,
+                    notlar: 'Takasla geldi', tarihISO: new Date().toISOString()
+                };
+                db.garaj.push(yeniTakasAraci);
+            } else {
+                if (!nakit || nakit <= 0) { showToast('Satış tutarı 0 olamaz!', 'err'); return; }
+            }
+
+            const masraflar = db.giderler.filter(g => g.traktorId === arac.id).reduce((a, b) => a + b.tutar, 0);
+            const maliyet = arac.alisFiyati + masraflar;
+            const netKar = ciro - maliyet;
+
+            db.satislar.push({
+                id: 'STS_' + crypto.randomUUID(),
+                plaka: arac.plaka,
+                markaModel: arac.marka + ' ' + arac.model + ' (' + (arac.yil || '') + ')',
+                sabitMaliyet: maliyet,
+                satisCirosu: ciro,
+                sabitNetKar: netKar,
+                aliciAd, aliciTel,
+                orijinalTraktor: JSON.parse(JSON.stringify(arac)),
+                iliskiliTakasId: yeniTakasAraci ? yeniTakasAraci.id : null,
+                tarihISO: new Date().toISOString()
+            });
+
+            db.garaj.splice(idx, 1);
+            if (!await saveData()) return;
+            document.getElementById('satis-nakit-tutar').value = '';
+            document.getElementById('satis-alici-ad').value = '';
+            document.getElementById('satis-alici-tel').value = '';
+        }
+
+        function satisGeriAl(id) {
+            if (!canWrite('admin')) return;
+            const satis = db.satislar.find(s => s.id === id);
+            if (!satis) return;
+            if (!confirm('Bu satış iptal edilsin ve araç garaja geri alınsın mı?')) return;
+
+            if (satis.orijinalTraktor) {
+                db.garaj.push(satis.orijinalTraktor);
+            }
+            if (satis.iliskiliTakasId) {
+                db.garaj = db.garaj.filter(t => t.id !== satis.iliskiliTakasId);
+            }
+            db.satislar = db.satislar.filter(s => s.id !== id);
+            saveData();
+        }
+
+        // ---------- KİRA ----------
+        async function kiraGiderKaydet() {
+            if (!canWrite('admin')) return;
+            const kalem = document.getElementById('kira-kalem-select').value;
+            const tutar = parseThousands(document.getElementById('kira-tutar').value);
+            if (!tutar || tutar <= 0) { showToast('Geçerli bir tutar girin!', 'err'); return; }
+
+            db.kiralar.push({ id: 'KRA_' + crypto.randomUUID(), kalem, tutar, tarihISO: new Date().toISOString() });
+            if (!await saveData()) return;
+            document.getElementById('kira-tutar').value = '';
+        }
+
+        // ---------- SİLME & DÜZENLEME ----------
+        function kayitSil(tur, id) {
+            if (!canWrite('admin')) return;
+            if (tur === 'satis') { satisGeriAl(id); return; }
+            if (!confirm('Bu kaydı silmek istediğinize emin misiniz?')) return;
+            if (tur === 'garaj') db.garaj = db.garaj.filter(x => x.id !== id);
+            else if (tur === 'gider') db.giderler = db.giderler.filter(x => x.id !== id);
+            else if (tur === 'kira') db.kiralar = db.kiralar.filter(x => x.id !== id);
+            saveData();
+        }
+
+        function kayitDuzenle(tur, id) {
+            if (!canWrite('admin')) return;
+            const modal = document.getElementById('edit-modal');
+            const body = document.getElementById('modal-body');
+            const saveBtn = document.getElementById('modal-save-btn');
+            body.innerHTML = '';
+
+            if (tur === 'garaj') {
+                const t = db.garaj.find(x => x.id === id);
+                if (!t) return;
+                document.getElementById('modal-title').innerText = 'Traktör Bilgilerini Düzenle';
+                body.innerHTML =
+                    '<div><label class="text-xs font-semibold">Marka</label><input id="edit-marka" value="' + escapeHtml(t.marka) + '" class="w-full border p-2 text-xs rounded-lg"></div>' +
+                    '<div><label class="text-xs font-semibold">Model</label><input id="edit-model" value="' + escapeHtml(t.model) + '" class="w-full border p-2 text-xs rounded-lg"></div>' +
+                    '<div><label class="text-xs font-semibold">Model Yılı</label><input id="edit-yil" value="' + escapeHtml(t.yil || '') + '" class="w-full border p-2 text-xs rounded-lg"></div>' +
+                    '<div class="' + (currentRole === 'staff' ? 'hidden' : '') + '"><label class="text-xs font-semibold">Alış Fiyatı (TL)</label><input id="edit-alis" value="' + t.alisFiyati + '" class="w-full border p-2 text-xs rounded-lg"></div>' +
+                    '<div><label class="text-xs font-semibold">Müşteri Satış Fiyatı (TL)</label><input id="edit-hedef" value="' + t.hedefFiyat + '" class="w-full border p-2 text-xs rounded-lg"></div>' +
+                    '<div><label class="text-xs font-semibold">Özellikler / Notlar / Muayene Tarihi</label><input id="edit-notlar" value="' + escapeHtml(t.notlar || '') + '" class="w-full border p-2 text-xs rounded-lg"></div>';
+                saveBtn.onclick = function() {
+                    t.marka = document.getElementById('edit-marka').value;
+                    t.model = document.getElementById('edit-model').value;
+                    t.yil = document.getElementById('edit-yil').value;
+                    if (currentRole === 'admin') t.alisFiyati = parseThousands(document.getElementById('edit-alis').value);
+                    t.hedefFiyat = parseThousands(document.getElementById('edit-hedef').value);
+                    t.notlar = document.getElementById('edit-notlar').value.trim();
+                    closeModal();
+                    saveData();
+                };
+            } else if (tur === 'gider') {
+                const g = db.giderler.find(x => x.id === id);
+                if (!g) return;
+                document.getElementById('modal-title').innerText = 'Masraf Kaydını Düzenle';
+                body.innerHTML =
+                    '<div><label class="text-xs font-semibold">Tutar (TL)</label><input id="edit-g-tutar" value="' + g.tutar + '" class="w-full border p-2 text-xs rounded-lg"></div>' +
+                    '<div><label class="text-xs font-semibold">Açıklama</label><input id="edit-g-aciklama" value="' + escapeHtml(g.aciklama || '') + '" class="w-full border p-2 text-xs rounded-lg"></div>';
+                saveBtn.onclick = function() {
+                    g.tutar = parseThousands(document.getElementById('edit-g-tutar').value);
+                    g.aciklama = document.getElementById('edit-g-aciklama').value.trim();
+                    closeModal();
+                    saveData();
+                };
+            } else if (tur === 'kira') {
+                const k = db.kiralar.find(x => x.id === id);
+                if (!k) return;
+                document.getElementById('modal-title').innerText = 'Dükkan Gideri Düzenle';
+                body.innerHTML =
+                    '<div><label class="text-xs font-semibold">Tutar (TL)</label><input id="edit-k-tutar" value="' + k.tutar + '" class="w-full border p-2 text-xs rounded-lg"></div>';
+                saveBtn.onclick = function() {
+                    k.tutar = parseThousands(document.getElementById('edit-k-tutar').value);
+                    closeModal();
+                    saveData();
+                };
+            } else if (tur === 'satis') {
+                const s = db.satislar.find(x => x.id === id);
+                if (!s) return;
+                document.getElementById('modal-title').innerText = 'Satış Kaydını Düzenle';
+                body.innerHTML =
+                    '<div><label class="text-xs font-semibold">Alıcı Adı</label><input id="edit-s-alici" value="' + escapeHtml(s.aliciAd || '') + '" class="w-full border p-2 text-xs rounded-lg"></div>' +
+                    '<div><label class="text-xs font-semibold">Alıcı Telefon</label><input id="edit-s-tel" value="' + escapeHtml(s.aliciTel || '') + '" class="w-full border p-2 text-xs rounded-lg"></div>';
+                saveBtn.onclick = function() {
+                    s.aliciAd = document.getElementById('edit-s-alici').value.trim();
+                    s.aliciTel = document.getElementById('edit-s-tel').value.trim();
+                    closeModal();
+                    saveData();
+                };
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+
+        function hesaplaSimulasyon() {
+            const id = document.getElementById('sim-traktor-select').value;
+            const satis = parseThousands(document.getElementById('sim-satis-fiyat').value);
+            const t = db.garaj.find(x => x.id === id);
+            if (!t) return;
+            const masraf = db.giderler.filter(g => g.traktorId === t.id).reduce((a, b) => a + b.tutar, 0);
+            const maliyet = t.alisFiyati + masraf;
+            const net = satis - maliyet;
+
+            document.getElementById('sim-alis').innerText = fmt(t.alisFiyati);
+            document.getElementById('sim-masraf').innerText = fmt(masraf);
+            document.getElementById('sim-maliyet').innerText = fmt(maliyet);
+            document.getElementById('sim-net-kar').innerText = fmt(net);
+        }
+
+        // ---------- YEDEKLEME ----------
+        function veriIndir() {
+            if (currentRole !== 'admin') return;
+            const exportDb = JSON.parse(JSON.stringify(db));
+            exportDb.config.adminPass = undefined; // şifre dışa aktarılmaz
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportDb, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", "Ceyhan_Tarim_Yedek_" + new Date().toISOString().slice(0,10) + ".json");
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            db.config.lastBackupISO = new Date().toISOString();
+            saveData(true);
+            showToast('Yedek indirildi', 'ok');
+        }
+
+        function csvIndir() {
+            if (currentRole !== 'admin') return;
+            let rows = [['Tarih','Tür','Plaka/Cari','Detay','Tutar']];
+            db.satislar.forEach(s => rows.push([formatDate(s.tarihISO), 'SATIŞ', s.plaka, s.markaModel, s.sabitNetKar]));
+            db.giderler.forEach(g => rows.push([formatDate(g.tarihISO), 'MASRAF', g.plaka, g.tur + ' - ' + (g.aciklama||''), -g.tutar]));
+            db.kiralar.forEach(k => rows.push([formatDate(k.tarihISO), 'DÜKKAN', '', k.kalem, -k.tutar]));
+            const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\\n');
+            const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+            const a = document.createElement('a');
+            a.setAttribute('href', dataStr);
+            a.setAttribute('download', 'Ceyhan_Tarim_Rapor_' + new Date().toISOString().slice(0,10) + '.csv');
+            document.body.appendChild(a); a.click(); a.remove();
+            showToast('CSV indirildi', 'ok');
+        }
+
+        function veriyukle() {
+            if (!canWrite('admin')) return;
+            const file = document.getElementById('import-file').files[0];
+            if (!file) { showToast('Lütfen bir JSON dosyası seçin!', 'err'); return; }
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const incoming = JSON.parse(e.target.result);
+                    if (!canWrite('admin')) return;
+                    if (!confirm('Bu yedek TÜM cihazlardaki ortak kayıtların yerine geçecek. Önce güncel JSON yedeğinizi indirin. Devam edilsin mi?')) return;
+                    db = loadDbDefaults(incoming);
+                    if (await saveData(true)) showToast('Yedek ortak sisteme yüklendi', 'ok');
+                } catch(err) { showToast('Geçersiz yedek dosyası!', 'err'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function loadDbDefaults(parsed) {
+            parsed.garaj = parsed.garaj || [];
+            parsed.giderler = parsed.giderler || [];
+            parsed.kiralar = parsed.kiralar || [];
+            parsed.satislar = parsed.satislar || [];
+            parsed.config = Object.assign({
+                darkMode: false, autoDarkMode: false, binlikOtomatik: true,
+                currency: '₺', sessionTimeoutMin: 0, companyName: 'CEYHAN TARIM',
+                companyAddress: '', companyPhone: '', lastBackupISO: null,
+                markalar: DEFAULT_MARKALAR.slice(), giderTurleri: DEFAULT_GIDER_TURLERI.slice(), kiraKalemleri: DEFAULT_KIRA_KALEMLERI.slice()
+            }, parsed.config || {});
+            delete parsed.config.adminPass;
+            return parsed;
+        }
+
+        function renderBackupInfo() {
+            const el = document.getElementById('last-backup-text');
+            const warn = document.getElementById('backup-warning');
+            const warnText = document.getElementById('backup-warning-text');
+            if (!db.config.lastBackupISO) {
+                el.innerText = 'Henüz yedek alınmadı.';
+                if (warn) { warn.classList.remove('hidden'); warn.classList.add('flex'); warnText.innerText = 'Hiç yedek almadınız — veri kaybı riskine karşı Ayarlar bölümünden JSON yedek indirin.'; }
+                return;
+            }
+            const d = new Date(db.config.lastBackupISO);
+            const gunFarki = Math.floor((Date.now() - d.getTime()) / (1000*60*60*24));
+            el.innerText = 'Son yedek: ' + d.toLocaleDateString('tr-TR') + ' (' + gunFarki + ' gün önce)';
+            if (gunFarki >= 7) {
+                warn.classList.remove('hidden'); warn.classList.add('flex');
+                warnText.innerText = 'Son yedeğiniz ' + gunFarki + ' gün önce alınmış — yeni bir JSON yedek almanızı öneririz.';
+            } else if (warn) {
+                warn.classList.add('hidden'); warn.classList.remove('flex');
+            }
+        }
+
+        async function tumVeriyiSifirla() {
+            if (!canWrite('admin')) return;
+            if (!confirm('TÜM veriler kalıcı olarak silinecek. Emin misiniz?')) return;
+            if (!confirm('Son kez soruyorum: garaj, satış, masraf ve kira kayıtlarının tamamı silinsin mi?')) return;
+            db.garaj = []; db.giderler = []; db.kiralar = []; db.satislar = [];
+            if (await saveData(true)) showToast('Tüm cihazlardaki ortak kayıtlar sıfırlandı', 'ok');
+        }
+
+        // ---------- RENDER ----------
+        function renderGaraj() {
+            const box = document.getElementById('garaj-kartlari');
+            const query = (document.getElementById('garaj-arama-input')?.value || '').toLowerCase();
+            box.innerHTML = '';
+
+            const list = db.garaj.filter(t =>
+                t.marka.toLowerCase().includes(query) ||
+                t.model.toLowerCase().includes(query) ||
+                t.plaka.toLowerCase().includes(query) ||
+                (t.saticiAd || '').toLowerCase().includes(query)
+            );
+
+            list.forEach(t => {
+                const masraflar = db.giderler.filter(g => g.traktorId === t.id).reduce((a, b) => a + b.tutar, 0);
+                const toplamMaliyet = t.alisFiyati + masraflar;
+
+                box.innerHTML +=
+                    '<div class="bg-white card-bg p-5 rounded-2xl border border-gray-200 card-shadow garaj-card space-y-3 relative">' +
+                        '<div class="flex justify-between items-start">' +
+                            '<div>' +
+                                '<span class="bg-blue-50 text-blue-700 font-bold px-2.5 py-1 rounded-lg text-xs">' + escapeHtml(t.plaka) + '</span>' +
+                                '<h3 class="font-extrabold text-base mt-2">' + escapeHtml(t.marka) + ' ' + escapeHtml(t.model) + '</h3>' +
+                                '<p class="text-xs text-gray-400">Model Yılı: ' + escapeHtml(t.yil || 'Belirtilmemiş') + '</p>' +
+                            '</div>' +
+                            '<div class="flex gap-1 no-print">' +
+                                '<button onclick="kayitDuzenle(\'garaj\', \'' + t.id + '\')" class="staff-only-hide text-gray-400 hover:text-blue-600 p-1"><i class="fa-solid fa-pen-to-square"></i></button>' +
+                                '<button onclick="kayitSil(\'garaj\', \'' + t.id + '\')" class="text-gray-400 hover:text-red-600 p-1 ' + (currentRole === 'staff' ? 'hidden' : '') + '"><i class="fa-solid fa-trash"></i></button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="space-y-1.5 pt-3 border-t border-gray-100 text-xs">' +
+                            (currentRole === 'admin' ? '<div class="flex justify-between text-gray-500"><span>Alış Fiyatı:</span><span class="font-semibold text-gray-800">' + fmt(t.alisFiyati) + '</span></div>' : '') +
+                            '<div class="flex justify-between text-gray-500"><span>Yapılan Masraflar:</span><span class="font-semibold text-amber-600">' + fmt(masraflar) + '</span></div>' +
+                            (currentRole === 'admin' ? '<div class="flex justify-between text-gray-900 font-bold pt-1.5 border-t border-gray-100"><span>Toplam Maliyet:</span><span class="text-blue-600">' + fmt(toplamMaliyet) + '</span></div>' : '') +
+                            '<div class="flex justify-between text-emerald-600 font-extrabold pt-1.5 border-t border-gray-100 text-sm"><span>Müşteri Satış Fiyatı:</span><span>' + fmt(t.hedefFiyat || 0) + '</span></div>' +
+                        '</div>' +
+                        (t.notlar ? '<p class="text-[11px] text-gray-400 pt-1"><i class="fa-solid fa-info-circle mr-1"></i>' + escapeHtml(t.notlar) + '</p>' : '') +
+                    '</div>';
+            });
+        }
+
+        function renderAll() {
+            applyDarkModeToDom();
+
+            const selectionIds = ['sanayi-traktor-select', 'satis-traktor-select', 'sim-traktor-select', 'in-marka', 'takas-marka', 'sanayi-gider-tur', 'kira-kalem-select'];
+            const selections = Object.fromEntries(selectionIds.map(id => [id, document.getElementById(id).value]));
+
+            const sanayiSel = document.getElementById('sanayi-traktor-select');
+            const satisSel = document.getElementById('satis-traktor-select');
+            const simSel = document.getElementById('sim-traktor-select');
+
+            sanayiSel.innerHTML = ''; satisSel.innerHTML = ''; simSel.innerHTML = '';
+
+            if (db.garaj.length === 0) {
+                sanayiSel.innerHTML = '<option value="">Garajda Araç Yok</option>';
+                satisSel.innerHTML = '<option value="">Garajda Araç Yok</option>';
+                simSel.innerHTML = '<option value="">Garajda Araç Yok</option>';
+            } else {
+                db.garaj.forEach(t => {
+                    const opt = '<option value="' + t.id + '">' + escapeHtml(t.plaka) + ' - ' + escapeHtml(t.marka) + ' ' + escapeHtml(t.model) + ' (' + escapeHtml(t.yil || '') + ')</option>';
+                    sanayiSel.innerHTML += opt;
+                    satisSel.innerHTML += opt;
+                    simSel.innerHTML += opt;
+                });
+            }
+
+            fillSelectFromConfig(document.getElementById('in-marka'), db.config.markalar);
+            fillSelectFromConfig(document.getElementById('takas-marka'), db.config.markalar);
+            fillSelectFromConfig(document.getElementById('sanayi-gider-tur'), db.config.giderTurleri);
+            fillSelectFromConfig(document.getElementById('kira-kalem-select'), db.config.kiraKalemleri);
+            selectionIds.forEach(id => {
+                const select = document.getElementById(id);
+                if (Array.from(select.options).some(option => option.value === selections[id])) select.value = selections[id];
+            });
+
+            renderGaraj();
+
+            const stokSermaye = db.garaj.reduce((acc, t) => {
+                const m = db.giderler.filter(g => g.traktorId === t.id).reduce((a, b) => a + b.tutar, 0);
+                return acc + t.alisFiyati + m;
+            }, 0);
+
+            const toplamKira = db.kiralar.reduce((a, b) => a + b.tutar, 0);
+            const toplamSatisKar = db.satislar.reduce((a, b) => a + b.sabitNetKar, 0);
+            const netBilanzo = toplamSatisKar - toplamKira;
+
+            document.getElementById('kpi-stok-adet').innerText = db.garaj.length + ' Adet';
+            document.getElementById('kpi-stok-sermaye').innerText = fmt(stokSermaye);
+            document.getElementById('kpi-toplam-kira').innerText = fmt(toplamKira);
+            document.getElementById('kpi-net-kar').innerText = fmt(netBilanzo);
+
+            document.getElementById('sidebar-company-name').innerText = db.config.companyName || 'CEYHAN TARIM';
+            document.getElementById('sidebar-footer-note').innerText = db.config.companyAddress || '';
+
+            const list = document.getElementById('ozet-gecmis-listesi');
+            list.innerHTML = '';
+            let hareketler = [];
+
+            db.satislar.forEach(s => hareketler.push({ id: s.id, type:'satis', iso: s.tarihISO, tur: 'SATIŞ', badge: 'bg-emerald-100 text-emerald-700', baslik: s.plaka, detay: s.markaModel + ' - Ciro: ' + fmt(s.satisCirosu), tutar: s.sabitNetKar, canEdit: true }));
+            db.giderler.forEach(g => hareketler.push({ id: g.id, type:'gider', iso: g.tarihISO, tur: 'MASRAF', badge: 'bg-amber-100 text-amber-700', baslik: g.plaka, detay: g.tur + ' - ' + (g.aciklama||''), tutar: -g.tutar, canEdit: true }));
+            db.kiralar.forEach(k => hareketler.push({ id: k.id, type:'kira', iso: k.tarihISO, tur: 'DÜKKAN', badge: 'bg-purple-100 text-purple-700', baslik: 'DÜKKAN', detay: k.kalem, tutar: -k.tutar, canEdit: true }));
+
+            hareketler.sort((a,b) => new Date(b.iso) - new Date(a.iso));
+
+            hareketler.forEach(item => {
+                list.innerHTML +=
+                    '<tr class="hover:bg-gray-50/80 transition">' +
+                        '<td class="p-3.5 text-xs text-gray-500">' + formatDate(item.iso) + '</td>' +
+                        '<td class="p-3.5"><span class="' + item.badge + ' px-2 py-0.5 rounded-md text-[10px] font-bold">' + item.tur + '</span></td>' +
+                        '<td class="p-3.5 font-bold">' + escapeHtml(item.baslik) + '</td>' +
+                        '<td class="p-3.5 text-xs text-gray-500">' + escapeHtml(item.detay) + '</td>' +
+                        '<td class="p-3.5 text-right font-bold staff-only-hide ' + (item.tutar >= 0 ? 'text-emerald-600':'text-red-500') + '">' + (item.tutar >= 0 ? '+':'-') + fmt(Math.abs(item.tutar)) + '</td>' +
+                        '<td class="p-3.5 text-center staff-only-hide no-print">' +
+                            (currentRole === 'admin' ? '<button onclick="kayitDuzenle(\'' + item.type + '\', \'' + item.id + '\')" class="text-gray-400 hover:text-blue-600 mr-2"><i class="fa-solid fa-pen-to-square"></i></button>' : '') +
+                            '<button onclick="kayitSil(\'' + item.type + '\', \'' + item.id + '\')" class="text-gray-400 hover:text-red-600">' + (item.type === 'satis' ? '<i class="fa-solid fa-rotate-left" title="Satışı geri al"></i>' : '<i class="fa-solid fa-trash"></i>') + '</button>' +
+                        '</td>' +
+                    '</tr>';
+            });
+
+            renderBackupInfo();
+
+            if (currentRole === 'admin') {
+                renderCharts(toplamSatisKar, stokSermaye);
+                hesaplaSimulasyon();
+            }
+            document.querySelectorAll('.staff-only-hide').forEach(element => element.classList.toggle('staff-hide', currentRole !== 'admin'));
+        }
+
+        function renderCharts(toplamKar, sermaye) {
+            const ctx1 = document.getElementById('chartGiderler').getContext('2d');
+            const ctx2 = document.getElementById('chartKarSermaye').getContext('2d');
+
+            if (chartGiderRef) chartGiderRef.destroy();
+            if (chartKarRef) chartKarRef.destroy();
+
+            const kategoriler = {};
+            db.giderler.forEach(g => { kategoriler[g.tur] = (kategoriler[g.tur] || 0) + g.tutar; });
+
+            chartGiderRef = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(kategoriler).length ? Object.keys(kategoriler) : ['Masraf Yok'],
+                    datasets: [{ label: 'Masraf Tutarı', data: Object.keys(kategoriler).length ? Object.values(kategoriler) : [0], backgroundColor: '#3b82f6', borderRadius: 8 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            chartKarRef = new Chart(ctx2, {
+                type: 'doughnut',
+                data: { labels: ['Stok Sermayesi', 'Net Satış Kârı'], datasets: [{ data: [sermaye || 1, toplamKar || 0], backgroundColor: ['#e2e8f0', '#10b981'] }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+    </script>
+    <script src="/cloud.js"></script>
+    <script type="module" src="/identity-client.js"></script>
+</body>
+</html>
